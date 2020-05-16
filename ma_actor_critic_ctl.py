@@ -61,7 +61,9 @@ def ma_actor_critic_train(env, agents, cfg, brain_name, num_agents,
         states = env_info.vector_observations
         # initialize score for each agent
         scores = np.zeros(num_agents)
-        agent.reset()
+        states = np.reshape(states, (1,num_agents*state_size)) # flatten states
+        for agent in agents:
+            agent.reset()
         start_time = time.time()
         for t in range(max_t):
             # select an action

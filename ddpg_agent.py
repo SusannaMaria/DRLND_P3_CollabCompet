@@ -14,10 +14,10 @@ import torch.optim as optim
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 
-class AgentDDPG():
+class AgentMADDPG():
     """Interacts with and learns from the environment."""
 
-    def __init__(self, state_size, action_size, random_seed, cfg_path):
+    def __init__(self, state_size, action_size, random_seed, cfg_path, num_agents):
         """Initialize an Agent object.
 
         Params
@@ -35,9 +35,11 @@ class AgentDDPG():
         self.action_size = action_size
         self.seed = random.seed(random_seed)
         self.epsilon = float(self.cfg['EPSILON'])
+        self.epsilon_decay = float(self.cfg['EPSILON_DECAY'])
         self.l1_loss = nn.L1Loss(reduce=False)
         self.mse_element_loss = nn.MSELoss(reduce=False)
-
+        self.num_agents = num_agents
+        self.timestep = 0
         # Actor Network (w/ Target Network)
         self.actor_local = Actor(
             state_size, action_size, random_seed).to(device)
@@ -62,32 +64,38 @@ class AgentDDPG():
         self.memory = ReplayBuffer(
             action_size, int(self.cfg['BUFFER_SIZE']), int(self.cfg['BATCH_SIZE']), random_seed)
 
-    def step(self, state, action, reward, next_state, done, timestep):
+    def step(self, state, action, reward, next_state, done, agent_number):
         """Save experience in replay memory, and use random sample from buffer to learn."""
+        self.timestep += 1
         # Save experience / reward
         self.memory.add(state, action, reward, next_state, done)
 
         # Learn at defined interval, if enough samples are available in memory
-        if len(self.memory) > int(self.cfg['BATCH_SIZE']) and timestep % int(self.cfg['LEARN_EVERY']) == 0:
+        if len(self.memory) > int(self.cfg['BATCH_SIZE']) and self.timestep % int(self.cfg['LEARN_EVERY']) == 0:
             for _ in range(int(self.cfg['LEARN_NUM'])):
                 experiences = self.memory.sample()
-                self.learn(experiences, float(self.cfg['GAMMA']))
+                self.learn(experiences, float(self.cfg['GAMMA']),agent_number)
 
-    def act(self, state, add_noise=True):
+    def act(self, states, add_noise=True):
         """Returns actions for given state as per current policy."""
-        state = torch.from_numpy(state).float().to(device)
+        states = torch.from_numpy(states).float().to(device)
         self.actor_local.eval()
+        actions = np.zeros((self.num_agents, self.action_size))
         with torch.no_grad():
-            action = self.actor_local(state).cpu().data.numpy()
+            # get action for each agent and concatenate them
+            for agent_num, state in enumerate(states):
+                action = self.actor_local(state).cpu().data.numpy()
+                actions[agent_num, :] = action
+
         self.actor_local.train()
         if add_noise:
-            action += self.epsilon * self.noise.sample()
-        return np.clip(action, -1, 1)
+            actions += self.epsilon * self.noise.sample()
+        return np.clip(actions, -1, 1)
 
     def reset(self):
         self.noise.reset()
 
-    def learn(self, experiences, gamma):
+    def learn(self, experiences, gamma,agent_number):
         """Update policy and value parameters using given batch of experience tuples.
         Q_targets = r + γ * critic_target(next_state, actor_target(next_state))
         where:
@@ -104,6 +112,13 @@ class AgentDDPG():
         # ---------------------------- update critic ---------------------------- #
         # Get predicted next-state actions and Q values from target models
         actions_next = self.actor_target(next_states)
+
+        if agent_number == 0:
+            actions_next = torch.cat((actions_next, actions[:, 2:]), dim=1)
+        else:
+            actions_next = torch.cat((actions[:, :2], actions_next), dim=1)
+
+
         Q_targets_next = self.critic_target(next_states, actions_next)
         # Compute Q targets for current states (y_i)
         Q_targets = rewards + (gamma * Q_targets_next * (1 - dones))
@@ -121,6 +136,13 @@ class AgentDDPG():
         # ---------------------------- update actor ---------------------------- #
         # Compute actor loss
         actions_pred = self.actor_local(states)
+
+        # Construct action prediction vector relative to each agent
+        if agent_number == 0:
+            actions_pred = torch.cat((actions_pred, actions[:, 2:]), dim=1)
+        else:
+            actions_pred = torch.cat((actions[:, :2], actions_pred), dim=1)
+
         actor_loss = -self.critic_local(states, actions_pred).mean()
         # Minimize the loss
         self.actor_optimizer.zero_grad()
@@ -133,6 +155,7 @@ class AgentDDPG():
 
         # ---------------------------- update noise ---------------------------- #
         self.epsilon -= float(self.cfg['EPSILON_DECAY'])
+        self.eps = max(self.eps, self.cfg['EPSILON_FINAL'])
         self.noise.reset()
 
     def soft_update(self, local_model, target_model, tau):

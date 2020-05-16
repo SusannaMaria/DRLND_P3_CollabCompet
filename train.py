@@ -1,6 +1,6 @@
-from ma_actor_critic_ctl import actor_critic_train, actor_critic_test
+from ma_actor_critic_ctl import ma_actor_critic_train, actor_critic_test
 #from td3_agent import AgentTD3
-from ddpg_agent import AgentDDPG
+from ddpg_agent import AgentMADDPG
 from unityagents import UnityEnvironment
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -47,8 +47,8 @@ print('The state for the first agent looks like:', states[0])
 
 
 # initialize agents
-agents = [AgentDDPG(state_size=state_size, action_size=action_size,
-                    random_seed=1, cfg_path="config.ini") for i in range(num_agents)]
+agents = [AgentMADDPG(state_size=state_size, action_size=action_size,
+                    random_seed=1, cfg_path="config.ini", num_agents=num_agents) for i in range(num_agents)]
 
 
 df = ma_actor_critic_train(env, agents, agents[0].cfg, brain_name, num_agents)
