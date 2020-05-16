@@ -1,4 +1,4 @@
-from actor_critic_ctl import actor_critic_train, actor_critic_test
+from ma_actor_critic_ctl import actor_critic_train, actor_critic_test
 #from td3_agent import AgentTD3
 from ddpg_agent import AgentDDPG
 from unityagents import UnityEnvironment
@@ -45,9 +45,13 @@ print('There are {} agents. Each observes a state with length: {}'.format(
     states.shape[0], state_size))
 print('The state for the first agent looks like:', states[0])
 
-# agent = AgentTD3(state_size=state_size, action_size=action_size,
-#                   random_seed=1, cfg_path="config.ini")
 
+# initialize agents
+agents = [AgentDDPG(state_size=state_size, action_size=action_size,
+                    random_seed=1, cfg_path="config.ini") for i in range(num_agents)]
+
+
+df = ma_actor_critic_train(env, agents, agents[0].cfg, brain_name, num_agents)
 
 # # Train
 # df = actor_critic_train(env, agent, agent.cfg, brain_name, num_agents)

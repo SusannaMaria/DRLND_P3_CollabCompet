@@ -11,7 +11,7 @@ from types import SimpleNamespace
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 
-def actor_critic_train(env, agent, cfg, brain_name, num_agents,
+def ma_actor_critic_train(env, agents, cfg, brain_name, num_agents,
                        print_every=1):
     """Deep Deterministic Policy Gradient (DDPG)
 
@@ -22,6 +22,25 @@ def actor_critic_train(env, agent, cfg, brain_name, num_agents,
         print_every (int)     : interval to display results
 
     """
+    
+    brain_name = env.brain_names[0]
+    brain = env.brains[brain_name]
+
+    # reset the environment
+    env_info = env.reset(train_mode=True)[brain_name]
+
+    # number of agents
+    num_agents = len(env_info.agents)
+    print('Number of agents:', num_agents)
+
+    # size of each action
+    action_size = brain.vector_action_space_size
+    print('Size of each action:', action_size)
+
+    # examine the state space
+    states = env_info.vector_observations
+    state_size = states.shape[1]
+
     n_episodes = int(cfg['N_EPISODES'])
     max_t = int(cfg['MAX_T'])
     save_n_episodes = int(cfg['SAVE_N_EPISODES'])
@@ -45,28 +64,27 @@ def actor_critic_train(env, agent, cfg, brain_name, num_agents,
         agent.reset()
         start_time = time.time()
         for t in range(max_t):
-
             # select an action
-            actions = agent.act(states, add_noise=True)
+            actions = [agent.act(states, add_noise=True) for agent in agents]
+            # flatten action pairs into a single vector
+            actions = np.reshape(actions, (1, num_agents*action_size))
             # send actions to environment
             env_info = env.step(actions)[brain_name]
             next_states = env_info.vector_observations    # get next state
+            next_states = np.reshape(next_states, (1, num_agents*state_size))
             rewards = env_info.rewards                    # get reward
             # see if episode has finished
-            dones = env_info.local_done
+            done = env_info.local_done
 
             # save experience to replay buffer, perform learning step at
             # defined interval
-            for state, action, reward, next_state, done in zip(states, actions,
-                                                               rewards,
-                                                               next_states,
-                                                               dones):
-                agent.step(state, action, reward, next_state, done, t)
-
+            for i, agent in enumerate(agents):
+                agent.step(states, actions, rewards[i], next_states, done, t)                                                               
+                
             states = next_states
 
             scores += rewards
-            if np.any(dones):  # exit loop when episode ends
+            if np.any(done):  # exit loop when episode ends
                 break
         # save time needed for episode
         duration = time.time() - start_time
