@@ -53,12 +53,11 @@ agents = [AgentMADDPG(state_size=state_size, action_size=action_size,
 
 df = ma_actor_critic_train(env, agents, agents[0].cfg, brain_name, num_agents)
 
-# # Train
-# df = actor_critic_train(env, agent, agent.cfg, brain_name, num_agents)
-# metadata = agent.cfg_items
-# filename = 'data_{}.hdf5'.format(agent.name)
-# store = pd.HDFStore(filename)
-# store.put('dataset_01', df)
-# store.get_storer('dataset_01').attrs.metadata = metadata
-# store.close()
-# plot_train(df)
+# Train
+metadata = agents[0].cfg_items
+filename = 'data_{}.hdf5'.format(agent.name)
+store = pd.HDFStore(filename)
+store.put('dataset_01', df)
+store.get_storer('dataset_01').attrs.metadata = metadata
+store.close()
+plot_train(df)
