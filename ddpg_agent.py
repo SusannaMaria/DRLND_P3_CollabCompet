@@ -58,7 +58,7 @@ class AgentMADDPG():
             self.critic_local.parameters(), lr=float(self.cfg['LR_CRITIC']), weight_decay=float(self.cfg['WEIGHT_DECAY']))
 
         # Noise process
-        self.noise = OUNoise(action_size, random_seed, mu=0., theta=float(self.cfg['OU_THETA']), sigma=float(self.cfg['OU_SIGMA']))
+        self.noise = OUNoise((num_agents, action_size), random_seed, mu=0., theta=float(self.cfg['OU_THETA']), sigma=float(self.cfg['OU_SIGMA']))
 
         # Replay memory
         self.memory = ReplayBuffer(
@@ -84,6 +84,7 @@ class AgentMADDPG():
         with torch.no_grad():
             # get action for each agent and concatenate them
             for agent_num, state in enumerate(states):
+                #print(state)
                 action = self.actor_local(state).cpu().data.numpy()
                 actions[agent_num, :] = action
 
@@ -112,6 +113,7 @@ class AgentMADDPG():
         # ---------------------------- update critic ---------------------------- #
         # Get predicted next-state actions and Q values from target models
         actions_next = self.actor_target(next_states)
+        # print(actions_next)
 
         if agent_number == 0:
             actions_next = torch.cat((actions_next, actions[:, 2:]), dim=1)
@@ -155,7 +157,7 @@ class AgentMADDPG():
 
         # ---------------------------- update noise ---------------------------- #
         self.epsilon -= float(self.cfg['EPSILON_DECAY'])
-        self.eps = max(self.eps, self.cfg['EPSILON_FINAL'])
+        self.epsilon = max(self.epsilon, float(self.cfg['EPSILON_FINAL']))
         self.noise.reset()
 
     def soft_update(self, local_model, target_model, tau):

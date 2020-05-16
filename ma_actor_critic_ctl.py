@@ -110,15 +110,20 @@ def ma_actor_critic_train(env, agents, cfg, brain_name, num_agents,
 
         if i_episode % save_n_episodes == 0:
             epi_str = "{:03}".format(i_episode)
-            torch.save(agent.actor_local.state_dict(),
-                       agent.name+"_"+epi_str+"_actor_ckpt.pth")
-            torch.save(agent.critic_local.state_dict(),
-                       agent.name+"_"+epi_str+"_critic_ckpt.pth")
+            torch.save(agents[0].actor_local.state_dict(),
+                       agents[0].name+"_0_"+epi_str+"_actor_ckpt.pth")
+            torch.save(agents[0].critic_local.state_dict(),
+                       agents[0].name+"_0_"+epi_str+"_critic_ckpt.pth")
     
-    torch.save(agent.actor_local.state_dict(),
-               agent.name+"_final_actor_ckpt.pth")
-    torch.save(agent.critic_local.state_dict(),
-               agent.name+"_final_critic_ckpt.pth")
+            torch.save(agents[0].actor_local.state_dict(),
+                       agents[0].name+"_1_"+epi_str+"_actor_ckpt.pth")
+            torch.save(agents[0].critic_local.state_dict(),
+                       agents[0].name+"_1_"+epi_str+"_critic_ckpt.pth")
+
+    # torch.save(agent.actor_local.state_dict(),
+    #            agent.name+"_final_actor_ckpt.pth")
+    # torch.save(agent.critic_local.state_dict(),
+    #            agent.name+"_final_critic_ckpt.pth")
 
     return df
 
