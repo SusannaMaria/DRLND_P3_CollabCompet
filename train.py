@@ -48,7 +48,7 @@ print('The state for the first agent looks like:', states[0])
 
 # initialize agents
 agents = [AgentMADDPG(state_size=state_size, action_size=action_size,
-                    random_seed=1, cfg_path="config.ini", num_agents=num_agents) for i in range(num_agents)]
+                    random_seed=1, cfg_path="config.ini", num_agents=1) for i in range(num_agents)]
 
 
 df = ma_actor_critic_train(env, agents, agents[0].cfg, brain_name, num_agents)

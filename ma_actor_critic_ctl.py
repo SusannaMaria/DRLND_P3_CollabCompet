@@ -81,11 +81,11 @@ def ma_actor_critic_train(env, agents, cfg, brain_name, num_agents,
             # save experience to replay buffer, perform learning step at
             # defined interval
             for i, agent in enumerate(agents):
-                agent.step(states, actions, rewards[i], next_states, done, t)                                                               
+                agent.step(states, actions, rewards[i], next_states, done, i)                                                               
                 
             states = next_states
 
-            scores += rewards
+            scores += np.max(rewards)
             if np.any(done):  # exit loop when episode ends
                 break
         # save time needed for episode
