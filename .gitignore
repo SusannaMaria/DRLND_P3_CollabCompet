@@ -129,3 +129,4 @@ dmypy.json
 .pyre/
 Tennis_Linux
 .vscode/settings.json
+*_best_model.checkpoint

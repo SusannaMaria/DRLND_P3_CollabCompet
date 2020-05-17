@@ -111,6 +111,7 @@ def train(args):
                 if worsen_tolerance <= 0:                   # earliy stop training
                     print("Early Stop Training.")
                     break
+    return total_rewards
 
 
 def test(args):
@@ -177,18 +178,31 @@ if __name__ == "__main__":
     parser.add_argument('--epsilon', default=float(1.0), type=float)
     parser.add_argument('--epsilon_decay', default=float(.995), type=float)
     parser.add_argument('--main_n_loop', default=int(5), type=int)
+   
+    args = parser.parse_args()
 
     env = UnityEnvironment(file_name=unity_environment_path)
-    args = parser.parse_args()
-    scores = []
+    
+    project = {}
+    project["args"] = args
+    project["scores"] = []
+    project["rewards"] = []
     mp = args.model_path
     for i in range(args.main_n_loop):
         args.model_path = "{:02d}_".format(i)+mp
-        train(args)
+        reward = train(args)
+        project["rewards"].append(reward)
         score = test(args)
-        scores.append(score)
+        project["scores"].append(score)
         print(score)
+    
+    f = open("project.json","w")
+    f.write( str(project) )
+    f.close()
+
     env.close()
-    print(np.min(scores))
-    print(np.max(scores))
-    print(np.mean(scores))
+
+
+    print(np.min(project["scores"]))
+    print(np.max(project["scores"]))
+    print(np.mean(project["scores"]))
