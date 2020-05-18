@@ -111,6 +111,7 @@ def train(args):
                 if worsen_tolerance <= 0:                   # earliy stop training
                     print("Early Stop Training.")
                     break
+    del agent
     return total_rewards
 
 
@@ -165,19 +166,19 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--num_episodes', default=int(2500), type=int)
-    parser.add_argument('--lr_actor', default=float(1e-5), type=float)
+    parser.add_argument('--lr_actor', default=float(1e-4), type=float)
     parser.add_argument('--lr_critic', default=float(1e-4), type=float)
     parser.add_argument('--lr_decay', default=float(0.995), type=float)
     parser.add_argument('--replay_buff_size', default=int(1e6), type=int)
     parser.add_argument('--gamma', default=float(0.95), type=float)
-    parser.add_argument('--batch_size', default=int(64), type=int)
+    parser.add_argument('--batch_size', default=int(128), type=int)
     parser.add_argument('--random_seed', default=int(999), type=int)
     parser.add_argument('--soft_update_tau', default=float(1e-3), type=float)
     parser.add_argument('--model_path', default='best_model.checkpoint')
     parser.add_argument('--test_n_run', default=int(100), type=int)
     parser.add_argument('--epsilon', default=float(1.0), type=float)
     parser.add_argument('--epsilon_decay', default=float(.995), type=float)
-    parser.add_argument('--main_n_loop', default=int(5), type=int)
+    parser.add_argument('--main_n_loop', default=int(10), type=int)
    
     args = parser.parse_args()
 
