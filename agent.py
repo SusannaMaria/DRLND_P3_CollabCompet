@@ -116,7 +116,13 @@ class DDPGAgent:
                  gamma = .99,
                  batch_size = 128,
                  random_seed = 42,
-                 soft_update_tau = 1e-3
+                 soft_update_tau = 1e-3,
+                 actor_layer_dim_1=128,
+                 actor_layer_dim_2=128,
+                 actor_layer_dim_3=0,
+                 critic_layer_dim_1=128,
+                 critic_layer_dim_2=64,
+                 critic_layer_dim_3=0                      
                  ):
         """
         Initialize model
@@ -127,12 +133,12 @@ class DDPGAgent:
         self.lr_decay = lr_decay
         self.tau = soft_update_tau
         
-        self.actor_local = ActorNetwork(state_dim, action_dim).to(device=device)
-        self.actor_target = ActorNetwork(state_dim, action_dim).to(device=device)
+        self.actor_local = ActorNetwork(state_dim, action_dim,actor_layer_dim_1,actor_layer_dim_2,actor_layer_dim_3).to(device=device)
+        self.actor_target = ActorNetwork(state_dim, action_dim,actor_layer_dim_1,actor_layer_dim_2,actor_layer_dim_3).to(device=device)
         self.actor_optimizer = optim.Adam(self.actor_local.parameters(), lr=self.lr_actor)
         
-        self.critic_local = CriticNetwork(state_dim, action_dim).to(device=device)
-        self.critic_target = CriticNetwork(state_dim, action_dim).to(device=device)
+        self.critic_local = CriticNetwork(state_dim, action_dim,critic_layer_dim_1,critic_layer_dim_2,critic_layer_dim_3).to(device=device)
+        self.critic_target = CriticNetwork(state_dim, action_dim,critic_layer_dim_1,critic_layer_dim_2,critic_layer_dim_3).to(device=device)
         self.critic_optimizer = optim.Adam(self.critic_local.parameters(), lr=self.lr_critic)
         
         self.noise = OUNoise(action_dim, random_seed)

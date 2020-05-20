@@ -16,24 +16,37 @@ class ActorNetwork(nn.Module):
     Actor (Policy) Network.
     """
 
-    def __init__(self, state_dim, action_dim):
+    def __init__(self, state_dim, action_dim, fc1_dim,fc2_dim, fc3_dim):
         """Initialize parameters and build model.
         :state_dim (int): Dimension of each state
         :action_dim (int): Dimension of each action
         """
         super(ActorNetwork, self).__init__()
-        self.fc1 = nn.Linear(state_dim, 64)
-        self.fc2 = nn.Linear(64, 128)
-        self.fc3 = nn.Linear(128, action_dim)
-        self.reset_parameters()
+        self.fc1 = nn.Linear(state_dim, fc1_dim)
 
+        self.fc3_dim = fc3_dim
+
+        if fc3_dim != 0:
+            self.fc2 = nn.Linear(fc1_dim, fc2_dim)
+            self.fc3 = nn.Linear(fc2_dim, fc3_dim)
+            self.fc4 = nn.Linear(fc3_dim, action_dim)
+        else:
+            self.fc2 = nn.Linear(fc1_dim, fc2_dim)
+            self.fc3 = nn.Linear(fc2_dim, action_dim)
+
+        self.reset_parameters()
+        
     def reset_parameters(self):
         """
         Initialize parameters
         """
         self.fc1.weight.data.uniform_(*hidden_init(self.fc1))
         self.fc2.weight.data.uniform_(*hidden_init(self.fc2))
-        self.fc3.weight.data.uniform_(-3e-3, 3e-3)
+        if self.fc3_dim >0:
+            self.fc3.weight.data.uniform_(*hidden_init(self.fc3))
+            self.fc4.weight.data.uniform_(-3e-3, 3e-3)
+        else:
+            self.fc3.weight.data.uniform_(-3e-3, 3e-3)
 
     def forward(self, x):
         """
@@ -41,7 +54,11 @@ class ActorNetwork(nn.Module):
         """
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
-        return F.tanh(self.fc3(x))
+        if self.fc3_dim >0:
+            x = F.relu(self.fc3(x))
+            return F.tanh(self.fc4(x))
+        else:
+            return F.tanh(self.fc3(x))
 
 
 class CriticNetwork(nn.Module):
@@ -49,17 +66,25 @@ class CriticNetwork(nn.Module):
     Critic (State-Value) Network.
     """
 
-    def __init__(self, state_dim, action_dim):
+    def __init__(self, state_dim, action_dim,fc1_dim,fc2_dim, fc3_dim):
         """
         Initialize parameters and build model
         :state_dim (int): Dimension of each state
         :action_dim (int): Dimension of each action
         """
         super(CriticNetwork, self).__init__()
-        self.state_fc = nn.Linear(state_dim, 64)
-        self.fc1 = nn.Linear(action_dim+64, 128)
-        self.fc2 = nn.Linear(128, 64)
-        self.fc3 = nn.Linear(64, 1)
+        self.state_fc = nn.Linear(state_dim, fc1_dim)
+        self.fc1 = nn.Linear(action_dim+fc1_dim, fc2_dim)
+        self.fc3_dim = fc3_dim
+
+        if fc3_dim != 0:
+            self.fc2 = nn.Linear(fc2_dim, fc3_dim)
+            self.fc3 = nn.Linear(fc3_dim, fc1_dim)
+            self.fc4 = nn.Linear(fc1_dim, 1)
+        else:
+            self.fc2 = nn.Linear(fc2_dim, fc1_dim)
+            self.fc3 = nn.Linear(fc1_dim, 1)
+
         self.reset_parameters()
 
     def reset_parameters(self):
@@ -69,7 +94,11 @@ class CriticNetwork(nn.Module):
         self.state_fc.weight.data.uniform_(*hidden_init(self.state_fc))
         self.fc1.weight.data.uniform_(*hidden_init(self.fc1))
         self.fc2.weight.data.uniform_(*hidden_init(self.fc2))
-        self.fc3.weight.data.uniform_(-3e-3, 3e-3)
+        if self.fc3_dim >0:
+            self.fc3.weight.data.uniform_(*hidden_init(self.fc3))
+            self.fc4.weight.data.uniform_(-3e-3, 3e-3)
+        else:
+            self.fc3.weight.data.uniform_(-3e-3, 3e-3)
 
     def forward(self, state, action):
         """
@@ -80,6 +109,13 @@ class CriticNetwork(nn.Module):
         x = torch.cat((x, action), dim=1)
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
-        return self.fc3(x)
+
+        if self.fc3_dim >0:
+            x = F.relu(self.fc3(x))
+            return self.fc4(x)
+        else:
+            return self.fc3(x)
+        
+        
 
     

@@ -5,6 +5,7 @@ import numpy as np
 from agent import MADDPG
 import argparse
 from tqdm import tqdm
+import os
 
 unity_environment_path = "./Tennis_Linux/Tennis.x86_64"
 
@@ -48,7 +49,14 @@ def train(args):
                    gamma=args.gamma,
                    batch_size=args.batch_size,
                    random_seed=args.random_seed,
-                   soft_update_tau=args.soft_update_tau
+                   soft_update_tau=args.soft_update_tau,
+                   actor_layer_dim_1=args.actor_layer_dim_1,
+                   actor_layer_dim_2=args.actor_layer_dim_2,
+                   actor_layer_dim_3=args.actor_layer_dim_3,
+                   critic_layer_dim_1=args.critic_layer_dim_1,
+                   critic_layer_dim_2=args.critic_layer_dim_2,
+                   critic_layer_dim_3=args.critic_layer_dim_3                   
+
                    )
 
     total_rewards = []
@@ -91,7 +99,7 @@ def train(args):
         if max_score <= episode_score:
             max_score = episode_score
             # save best model so far
-            agent.save(args.model_path)
+            agent.save("{}/{:02d}_best_model.checkpoint".format(args.model_path,args.loop_counter))
 
         # record avg score for the latest 100 steps
         if len(total_rewards) >= args.test_n_run:
@@ -107,7 +115,7 @@ def train(args):
                     worsen_tolerance -= 1                   # count worsening counts
                     print("Loaded from last best model.")
                     # continue from last best-model
-                    agent.load(args.model_path)
+                    agent.load("{}/{:02d}_best_model.checkpoint".format(args.model_path,args.loop_counter))
                 if worsen_tolerance <= 0:                   # earliy stop training
                     print("Early Stop Training.")
                     break
@@ -131,9 +139,14 @@ def test(args):
     states = env_info.vector_observations
     state_size = states.shape[1]
 
-    agent = MADDPG(state_size, action_size)
+    agent = MADDPG(state_size, action_size, actor_layer_dim_1=args.actor_layer_dim_1,
+                   actor_layer_dim_2=args.actor_layer_dim_2,
+                   actor_layer_dim_3=args.actor_layer_dim_3,
+                   critic_layer_dim_1=args.critic_layer_dim_1,
+                   critic_layer_dim_2=args.critic_layer_dim_2,
+                   critic_layer_dim_3=args.critic_layer_dim_3  )
 
-    agent.load(args.model_path)
+    agent.load("{}/{:02d}_best_model.checkpoint".format(args.model_path,args.loop_counter))
 
     test_scores = []
     for i_episode in tqdm(range(1, 1+args.test_n_run)):
@@ -162,24 +175,39 @@ def test(args):
     return avg_score
 
 
+
+class RawTextArgumentDefaultsHelpFormatter(
+        argparse.ArgumentDefaultsHelpFormatter,
+        argparse.RawTextHelpFormatter
+    ):
+        pass
+
 if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--num_episodes', default=int(2500), type=int)
-    parser.add_argument('--lr_actor', default=float(1e-4), type=float)
-    parser.add_argument('--lr_critic', default=float(1e-4), type=float)
-    parser.add_argument('--lr_decay', default=float(0.995), type=float)
-    parser.add_argument('--replay_buff_size', default=int(1e6), type=int)
-    parser.add_argument('--gamma', default=float(0.95), type=float)
-    parser.add_argument('--batch_size', default=int(128), type=int)
-    parser.add_argument('--random_seed', default=int(999), type=int)
-    parser.add_argument('--soft_update_tau', default=float(1e-3), type=float)
-    parser.add_argument('--model_path', default='best_model.checkpoint')
-    parser.add_argument('--test_n_run', default=int(100), type=int)
-    parser.add_argument('--epsilon', default=float(1.0), type=float)
-    parser.add_argument('--epsilon_decay', default=float(.995), type=float)
-    parser.add_argument('--main_n_loop', default=int(10), type=int)
-   
+
+
+    parser = argparse.ArgumentParser(formatter_class=RawTextArgumentDefaultsHelpFormatter)
+    parser.add_argument('--num_episodes', default=int(2500), type=int, help=''' ''')
+    parser.add_argument('--lr_actor', default=float(1e-4), type=float, help=''' ''')
+    parser.add_argument('--lr_critic', default=float(1e-4), type=float, help=''' ''')
+    parser.add_argument('--lr_decay', default=float(0.995), type=float, help=''' ''')
+    parser.add_argument('--replay_buff_size', default=int(1e6), type=int, help=''' ''')
+    parser.add_argument('--gamma', default=float(0.95), type=float, help=''' ''')
+    parser.add_argument('--batch_size', default=int(64), type=int, help=''' ''')
+    parser.add_argument('--random_seed', default=int(999), type=int, help=''' ''')
+    parser.add_argument('--soft_update_tau', default=float(1e-3), type=float, help=''' ''')
+    parser.add_argument('--model_path', default='training', help=''' ''')
+    parser.add_argument('--test_n_run', default=int(100), type=int, help=''' ''')
+    parser.add_argument('--epsilon', default=float(1.0), type=float, help=''' ''')
+    parser.add_argument('--epsilon_decay', default=float(.995), type=float, help=''' ''')
+    parser.add_argument('--main_n_loop', default=int(10), type=int, help=''' ''')
+    parser.add_argument('--actor_layer_dim_1', default=int(64), type=int, help=''' ''')
+    parser.add_argument('--actor_layer_dim_2', default=int(128), type=int, help=''' ''')    
+    parser.add_argument('--actor_layer_dim_3', default=int(0), type=int, help=''' ''')    
+    parser.add_argument('--critic_layer_dim_1', default=int(64), type=int, help=''' ''')
+    parser.add_argument('--critic_layer_dim_2', default=int(128), type=int, help=''' ''')    
+    parser.add_argument('--critic_layer_dim_3', default=int(0), type=int, help=''' ''')    
+
     args = parser.parse_args()
 
     env = UnityEnvironment(file_name=unity_environment_path)
@@ -188,16 +216,22 @@ if __name__ == "__main__":
     project["args"] = args
     project["scores"] = []
     project["rewards"] = []
-    mp = args.model_path
+
+    try:
+        os.mkdir(args.model_path)
+    except OSError:
+        pass
+
     for i in range(args.main_n_loop):
-        args.model_path = "{:02d}_".format(i)+mp
+        args.loop_counter = i
+        print(args)
         reward = train(args)
         project["rewards"].append(reward)
         score = test(args)
         project["scores"].append(score)
         print(score)
     
-    f = open("project.json","w")
+    f = open("{}/project.json".format(args.model_path),"w")
     f.write( str(project) )
     f.close()
 

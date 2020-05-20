@@ -43,7 +43,9 @@ def readproject(filename):
     return ds
 
 
-projects = ["01Run_standard","02Run_Batchsize128","03Run_lractor1e-4","04Run_"]
+projects = ["01Run_standard","02Run_Batchsize128","03Run_lractor1e-4","04Run_",
+            "05Run_ActorLayer_4","06Run_ActorLayer_4_batchsize128","07Run_",
+            "08Run_Actor64","09Run_Actor128"]
 
 dfs_args = []
 for project in projects:
@@ -70,7 +72,7 @@ for project in projects:
 
 df_args_fin = pd.concat(dfs_args)
 del df_args_fin['model_path']
-print(df_args_fin.to_html())
+print(df_args_fin)
 
 
 # #df = dft.cumsum()
