@@ -10,16 +10,6 @@ import os
 unity_environment_path = "./Tennis_Linux/Tennis.x86_64"
 
 
-def draw(scores, path="fig.png", title="Performance", xlabel="Episode #", ylabel="Score"):
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-    plt.title(title)
-    plt.plot(np.arange(len(scores)), scores)
-    plt.ylabel(ylabel)
-    plt.xlabel(xlabel)
-    plt.savefig(path)
-
-
 def train(args):
     # prepare environment
     brain_name = env.brain_names[0]
