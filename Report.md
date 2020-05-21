@@ -54,21 +54,21 @@ Parameters that have not been changed over the training period
 
 Parameters that have been changed. A total of 10 runs were made
 
-|                    |          1 |          2 |          3 |         4 |          5 |          6 |          7 |          8 |           9 |
-|:-------------------|-----------:|-----------:|-----------:|----------:|-----------:|-----------:|-----------:|-----------:|------------:|
-| actor_layer_dim_1  |  64        |  64        |  64        |  64       |  64        |  64        |  64        |  64        |  64         |
-| actor_layer_dim_2  | 128        | 128        | 128        | 128       | 128        | 128        | 128        | 128        | 128         |
-| actor_layer_dim_3  |   0        |   0        |   0        |   0       |  64        |  64        |  64        | 128        | 128         |
-| batch_size         |  64        | 128        |  64        | 128       |  64        | 128        | 256        |  64        |  64         |
-| critic_layer_dim_1 |  64        |  64        |  64        |  64       |  64        |  64        |  64        |  64        |  64         |
-| critic_layer_dim_2 | 128        | 128        | 128        | 128       | 128        | 128        | 128        | 128        | 128         |
-| critic_layer_dim_3 |   0        |   0        |   0        |   0       |   0        |   0        |   0        |   0        |   0         |
-| lr_actor           |   1e-05    |   1e-05    |   0.0001   |   0.0001  |   0.0001   |   0.0001   |   0.0001   |   0.0001   |   1e-05     |
-| lr_critic          |   0.0001   |   0.0001   |   0.0001   |   0.0001  |   0.0001   |   0.0001   |   0.0001   |   0.0001   |   0.0001    |
-| scores_min         |   0        |   0.0403   |   0.0194   |   0       |   0        |   0        |   0        |   0        |   0.002     |
-| scores_max         |   1.9529   |   0.8662   |   2.601    |   2.331   |   2.15     |   2.3709   |   2.27     |   1.1311   |   0.1561    |
-| scores_mean        |   0.34578  |   0.17942  |   0.78306  |   0.49189 |   0.40662  |   0.52985  |   0.8188   |   0.20758  |   0.07861   |
-| scores_std         |   0.592145 |   0.237737 |   0.856658 |   0.79874 |   0.683908 |   0.702423 |   0.886559 |   0.331744 |   0.0412998 |
+|                    |          0 |          0 |          0 |         0 |          0 |          0 |          0 |          0 |           0 |           0 |
+|:-------------------|-----------:|-----------:|-----------:|----------:|-----------:|-----------:|-----------:|-----------:|------------:|------------:|
+| actor_layer_dim_1  |  64        |  64        |  64        |  64       |  64        |  64        |  64        |  64        |  64         |  64         |
+| actor_layer_dim_2  | 128        | 128        | 128        | 128       | 128        | 128        | 128        | 128        | 128         | 128         |
+| actor_layer_dim_3  |   0        |   0        |   0        |   0       |  64        |  64        |  64        | 128        | 128         |   0         |
+| batch_size         |  64        | 128        |  64        | 128       |  64        | 128        | 256        |  64        |  64         |  64         |
+| critic_layer_dim_1 |  64        |  64        |  64        |  64       |  64        |  64        |  64        |  64        |  64         |  64         |
+| critic_layer_dim_2 | 128        | 128        | 128        | 128       | 128        | 128        | 128        | 128        | 128         | 128         |
+| critic_layer_dim_3 |   0        |   0        |   0        |   0       |   0        |   0        |   0        |   0        |   0         |  64         |
+| lr_actor           |   1e-05    |   1e-05    |   0.0001   |   0.0001  |   0.0001   |   0.0001   |   0.0001   |   0.0001   |   1e-05     |   0.0001    |
+| lr_critic          |   0.0001   |   0.0001   |   0.0001   |   0.0001  |   0.0001   |   0.0001   |   0.0001   |   0.0001   |   0.0001    |   1e-05     |
+| scores_min         |   0        |   0.0403   |   0.0194   |   0       |   0        |   0        |   0        |   0        |   0.002     |   0.0167    |
+| scores_max         |   1.9529   |   0.8662   |   2.601    |   2.331   |   2.15     |   2.3709   |   2.27     |   1.1311   |   0.1561    |   0.09      |
+| scores_mean        |   0.34578  |   0.17942  |   0.78306  |   0.49189 |   0.40662  |   0.52985  |   0.8188   |   0.20758  |   0.07861   |   0.05296   |
+| scores_std         |   0.592145 |   0.237737 |   0.856658 |   0.79874 |   0.683908 |   0.702423 |   0.886559 |   0.331744 |   0.0412998 |   0.0309718 |
 
 # Analyis
 I trained a total of ```10 hyperparameter variants * 10 trainings * 2500 episodes = 250000 episodes``` for 100 model checkpoints over 1 day on my PC. The results of a training could go against zero or an ideal reward greater than 2, so I decided to train each hyperparameter set 10 times. The score shown in the table (Min, Max, Mean, Std) was calculated from 10 independent checkpoints per hyperparameter data set. Each of them played 100 episodes solo with himself.
@@ -81,3 +81,4 @@ I trained a total of ```10 hyperparameter variants * 10 trainings * 2500 episode
 ![](03Run/rewards.png)
 
 # Tournament
+I wanted to see how a solo player performs in a competition with others and let every trained agent (100) play with himself and against each other. 
