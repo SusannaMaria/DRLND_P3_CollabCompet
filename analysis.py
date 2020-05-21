@@ -97,6 +97,5 @@ if __name__ == "__main__":
     for c in col_individual:
         del df_args_fin[c]
 
-    print(df_args_fin.to_markdown())
-
-    print(df_runs.to_markdown())
+    print(df_args_fin.T.to_markdown())
+    print(df_runs.T.to_markdown())
