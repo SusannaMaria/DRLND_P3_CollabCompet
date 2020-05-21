@@ -81,4 +81,16 @@ I trained a total of ```10 hyperparameter variants * 10 trainings * 2500 episode
 ![](03Run/rewards.png)
 
 # Tournament
-I wanted to see how a solo player performs in a competition with others and let every trained agent (100) play with himself and against each other. 
+I wanted to see how a solo player performs in a competition with others and let every best trained agent for each hyperparameter set play with himself and against each other from different dataset
+
+![](03Run/rewards.png)
+
+The top 5 of the games. Solo game 3 won. Hyperparameter set 3 and 7 together had the best score in the mixed game.
+
+```
+03Run/03_best_model.checkpoint vs. 03Run/03_best_model.checkpoint = 2.631000039204955
+04Run/09_best_model.checkpoint vs. 06Run/04_best_model.checkpoint = 2.5099000374041496
+03Run/03_best_model.checkpoint vs. 07Run/09_best_model.checkpoint = 2.502000037282705
+04Run/09_best_model.checkpoint vs. 03Run/03_best_model.checkpoint = 2.4930000371485947
+07Run/09_best_model.checkpoint vs. 03Run/03_best_model.checkpoint = 2.4568000366166234
+```

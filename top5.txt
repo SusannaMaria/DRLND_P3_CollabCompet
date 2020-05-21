@@ -1,0 +1,5 @@
+03Run/03_best_model.checkpoint vs. 03Run/03_best_model.checkpoint = 2.631000039204955
+04Run/09_best_model.checkpoint vs. 06Run/04_best_model.checkpoint = 2.5099000374041496
+03Run/03_best_model.checkpoint vs. 07Run/09_best_model.checkpoint = 2.502000037282705
+04Run/09_best_model.checkpoint vs. 03Run/03_best_model.checkpoint = 2.4930000371485947
+07Run/09_best_model.checkpoint vs. 03Run/03_best_model.checkpoint = 2.4568000366166234
