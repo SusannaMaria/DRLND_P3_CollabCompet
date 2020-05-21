@@ -57,7 +57,7 @@ if __name__ == "__main__":
 
     dfs_args = []
     for project in projects:
-        ds = readproject("{}/project.json".format(project))
+        ds = readproject("chkpts/{}/project.json".format(project))
         df_args = pd.DataFrame([ds['args']])
 
         scores_min = np.min(ds['scores'])
@@ -99,3 +99,4 @@ if __name__ == "__main__":
 
     print(df_args_fin.T.to_markdown())
     print(df_runs.T.to_markdown())
+

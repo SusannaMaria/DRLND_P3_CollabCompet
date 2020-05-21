@@ -129,7 +129,7 @@ def loadagent(ckp_name, *args, **kargs):
     return agent
 
 
-projects = ['01Run', '02Run', '03Run', '04Run', '05Run']
+projects = ["01Run", "02Run", "03Run", "04Run", "05Run", "06Run", "07Run", "08Run", "09Run", "10Run"]
 
 dfs_args = []
 
@@ -144,34 +144,42 @@ action_size = brain.vector_action_space_size
 states = env_info.vector_observations
 state_size = states.shape[1]
 
+max_index = []
+for project in projects:
+    ds = readproject("chkpts/{}/project.json".format(project))    
+    max_index.append(ds['scores'].index(max(ds['scores'])))
 
+c = 0
 for project in projects:
     ds = readproject("{}/project.json".format(project))
     args = ds['args']
-    for c in range(10):
-        ckp_name = "{}/{:02d}_best_model.checkpoint".format(project, c)
-        agent = loadagent(ckp_name,
-                          state_dim=state_size,
-                          action_dim=action_size,
-                          actor_layer_dim_1=args['actor_layer_dim_1'],
-                          actor_layer_dim_2=args['actor_layer_dim_2'],
-                          actor_layer_dim_3=args['actor_layer_dim_3'],
-                          critic_layer_dim_1=args['critic_layer_dim_1'],
-                          critic_layer_dim_2=args['critic_layer_dim_2'],
-                          critic_layer_dim_3=args['critic_layer_dim_3'])
-        agents.append(agent)
+    ckp_name = "{}/{:02d}_best_model.checkpoint".format(project, max_index[c])
+    c+=1
+    agent = loadagent(ckp_name,
+                      state_dim=state_size,
+                      action_dim=action_size,
+                      actor_layer_dim_1=args['actor_layer_dim_1'],
+                      actor_layer_dim_2=args['actor_layer_dim_2'],
+                      actor_layer_dim_3=args['actor_layer_dim_3'],
+                      critic_layer_dim_1=args['critic_layer_dim_1'],
+                      critic_layer_dim_2=args['critic_layer_dim_2'],
+                      critic_layer_dim_3=args['critic_layer_dim_3'])
+    agents.append(agent)
 match = 1
 results = np.zeros((len(agents), len(agents)))
+
 for idx, ag_x in enumerate(agents):
     for idy, ag_y in enumerate(agents):
-
-        result = np.random.random_sample()
-        results[idy][idx] = result
-
+        print("{}: {} vs. {}".format(match, ag_x.path, ag_y.path))
         game = TourDDPG(ag_x, ag_y)
-
+        result = play(env, game, 100)
+        results[idy][idx] = result
         print("{}: {} vs. {} = {}".format(match, ag_x.path, ag_y.path, result))
-
+        f=open("tournament_result.txt", "a")
+        f.write("{}: {} vs. {} = {}\r\n".format(match, ag_x.path, ag_y.path, result))
+        f.close()
         match += 1
+
 plt.imshow(results, cmap='winter', interpolation='nearest')
 plt.show()
+

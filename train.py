@@ -89,7 +89,7 @@ def train(args):
         if max_score <= episode_score:
             max_score = episode_score
             # save best model so far
-            agent.save("{}/{:02d}_best_model.checkpoint".format(args.model_path,args.loop_counter))
+            agent.save("chkpts/{}/{:02d}_best_model.checkpoint".format(args.model_path,args.loop_counter))
 
         # record avg score for the latest 100 steps
         if len(total_rewards) >= args.test_n_run:
@@ -105,7 +105,7 @@ def train(args):
                     worsen_tolerance -= 1                   # count worsening counts
                     print("Loaded from last best model.")
                     # continue from last best-model
-                    agent.load("{}/{:02d}_best_model.checkpoint".format(args.model_path,args.loop_counter))
+                    agent.load("chkpts/{}/{:02d}_best_model.checkpoint".format(args.model_path,args.loop_counter))
                 if worsen_tolerance <= 0:                   # earliy stop training
                     print("Early Stop Training.")
                     break
@@ -136,7 +136,7 @@ def test(args):
                    critic_layer_dim_2=args.critic_layer_dim_2,
                    critic_layer_dim_3=args.critic_layer_dim_3  )
 
-    agent.load("{}/{:02d}_best_model.checkpoint".format(args.model_path,args.loop_counter))
+    agent.load("chkpts/{}/{:02d}_best_model.checkpoint".format(args.model_path,args.loop_counter))
 
     test_scores = []
     for i_episode in tqdm(range(1, 1+args.test_n_run)):
@@ -221,7 +221,7 @@ if __name__ == "__main__":
         project["scores"].append(score)
         print(score)
     
-    f = open("{}/project.json".format(args.model_path),"w")
+    f = open("chkpts/{}/project.json".format(args.model_path),"w")
     f.write( str(project) )
     f.close()
 
