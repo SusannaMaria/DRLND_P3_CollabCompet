@@ -56,7 +56,10 @@ class MADDPG:
         """
         get actions from all agents in the MADDPG object
         """
-        actions = [agent.act(state, add_noise) for agent, state in zip(self.adversarial_agents, states_all_agents)]
+        actions = []
+        for agent, state in zip(self.adversarial_agents, states_all_agents):
+            actions.append(agent.act(state, add_noise))
+        
         return np.stack(actions, axis=0)
 
     def update(self, *experiences):
