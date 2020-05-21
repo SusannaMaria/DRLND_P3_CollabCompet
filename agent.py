@@ -144,6 +144,7 @@ class DDPGAgent:
         self.noise = OUNoise(action_dim, random_seed)
         
         self.memory = ReplayBuffer(action_dim, replay_buff_size, batch_size, random_seed)
+        self.path = ""
         
         
     def update_model(self, state, action, reward, next_state, done):
