@@ -35,6 +35,10 @@ A typical behavior of the training. It shows no increase in the reward over a lo
 # Models
 
 # Training
+Since the training was very unstable, the model weights were stored continuously and if the agent could be trained above 0.5, a fallback to the last best state was implemented.
+
+Parameters that have not been changed over the training period
+
 | Hyperparameter   | general  |
 |:-----------------|---------:|
 | epsilon          |    1     |
@@ -48,6 +52,7 @@ A typical behavior of the training. It shows no increase in the reward over a lo
 | soft_update_tau  |    0.001 |
 | test_n_run       |  100     |
 
+Parameters that have been changed. A total of 10 runs were made
 
 |                    |          1 |          2 |          3 |         4 |          5 |          6 |          7 |          8 |           9 |
 |:-------------------|-----------:|-----------:|-----------:|----------:|-----------:|-----------:|-----------:|-----------:|------------:|
@@ -66,4 +71,13 @@ A typical behavior of the training. It shows no increase in the reward over a lo
 | scores_std         |   0.592145 |   0.237737 |   0.856658 |   0.79874 |   0.683908 |   0.702423 |   0.886559 |   0.331744 |   0.0412998 |
 
 # Analyis
+I trained a total of ```10 hyperparameter variants * 10 trainings * 2500 episodes = 250000 episodes``` for 100 model checkpoints over 1 day on my PC. The results of a training could go against zero or an ideal reward greater than 2, so I decided to train each hyperparameter set 10 times. The score shown in the table (Min, Max, Mean, Std) was calculated from 10 independent checkpoints per hyperparameter data set. Each of them played 100 episodes solo with himself.
+
+## Which dataset is the best?
+* Small batchsize of 64, the higher the worse
+* Learnrate Actor and Critic set to 0.001
+* Dimensions for hidden layers of Actor and Critic 64x128
+
+![](03Run/rewards.png)
+
 # Tournament

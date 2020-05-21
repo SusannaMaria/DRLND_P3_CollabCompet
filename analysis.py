@@ -53,7 +53,7 @@ def readproject(filename):
 
 if __name__ == "__main__":
         
-    projects = ["01Run", "02Run", "03Run", "04Run", "05Run","06Run", "07Run", "08Run", "09Run"]
+    projects = ["01Run", "02Run", "03Run", "04Run", "05Run", "06Run", "07Run", "08Run", "09Run", "10Run"]
 
     dfs_args = []
     for project in projects:
