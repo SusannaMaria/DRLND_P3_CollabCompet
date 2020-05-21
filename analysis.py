@@ -53,7 +53,7 @@ def readproject(filename):
 
 if __name__ == "__main__":
         
-    projects = ["01Run", "02Run", "03Run", "04Run", "05Run"]
+    projects = ["01Run", "02Run", "03Run", "04Run", "05Run","06Run", "07Run", "08Run", "09Run"]
 
     dfs_args = []
     for project in projects:
@@ -97,6 +97,6 @@ if __name__ == "__main__":
     for c in col_individual:
         del df_args_fin[c]
 
-    print(df_args_fin)
+    print(df_args_fin.to_markdown())
 
-    print(df_runs)
+    print(df_runs.to_markdown())
