@@ -27,7 +27,7 @@ The chosen approach of the solo play of a DDPG is by far not perfect but I could
 
 A typical behavior of the training. It shows no increase in the reward over a long period of time and then rises explosively and then collapses again soon. It was interesting that different results were achieved with the same hyperparameter definitions.
 
-![](02Run/rewards.png)
+![](chkpts/02Run/rewards.png)
 
 ### Solving the problem with stabiliity ... or not
 
@@ -78,12 +78,12 @@ I trained a total of ```10 hyperparameter variants * 10 trainings * 2500 episode
 * Learnrate Actor and Critic set to 0.001
 * Dimensions for hidden layers of Actor and Critic 64x128
 
-![](03Run/rewards.png)
+![](chkpts/03Run/rewards.png)
 
 # Tournament
 I wanted to see how a solo player performs in a competition with others and let every best trained agent for each hyperparameter set play with himself and against each other from different dataset
 
-![](03Run/rewards.png)
+![](static/tournament.png)
 
 The top 5 of the games. Solo game 3 won. Hyperparameter set 3 and 7 together had the best score in the mixed game.
 
