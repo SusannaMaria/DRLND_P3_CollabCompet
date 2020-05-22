@@ -1,6 +1,5 @@
 [//]: # (Image References)
 
-[image1]: https://user-images.githubusercontent.com/10624937/42135623-e770e354-7d12-11e8-998d-29fc74429ca2.gif "Trained Agent"
 [image2]: https://user-images.githubusercontent.com/10624937/42135622-e55fb586-7d12-11e8-8a54-3c31da15a90a.gif "Soccer"
 
 
@@ -21,9 +20,17 @@ The task is episodic, and in order to solve the environment, your agents must ge
 
 The environment is considered solved, when the average (over 100 episodes) of those **scores** is at least +0.5.
 
-# Implmentation
-![Trained Agent][static/game.gif]
+# Solution
+The solution is described in detail in [train.py](train.py) and in [Report.md](Report.md). Further scripts and implementations are described in [Report.md](Report.md).
 
+To solve the task I decided to use a DDPG(Deep Deterministic Policy Gradient) [paper](https://arxiv.org/pdf/1509.02971.pdf) based agent, with which I could already gain experience in P2 [Link](https://github.com/SusannaMaria/DRLND_P2_ContinuousControl). The agent was trained in solo play and played the games with himself during the training. 
+The main focus was on the determination of hyperparameters. I investigated in 10 variants of an already stable set of parameters. It was important to realize that the success of a training cannot be guaranteed, and that it was necessary to repeat the training with the same hyper parameters, as well as to fix the model weights and a rollback if the training result suddenly collapsed.
+
+All in all I trained a DDPG agent so 10x10x2500 episodes. I recorded a few seconds of "endgame" between two DDPGs with different parameters trained to demonstrate the success of solving the task at hand. 
+
+![Trained Agent](static/game.gif)
+
+It shows that two different behaviors of the agents was developed. "put in back" and a more aggressive behavior.  In the video, the sides are changed about halfway through, the behavior has not changed much.
 
 # General Information from Udacity
 ### Getting Started
