@@ -85,7 +85,7 @@ I trained a total of ```10 hyperparameter variants * 10 trainings * 2500 episode
 For each parameter set I saved the checkpoints for 10 complete trainings with 2500 episodes each. I saved the results of the training scores and the test runs into a JSONfile e.g. [project.json](chkpts/03Run/project.json)
 
 * Small batchsize of 64, the higher the worse
-* Learnrate Actor and Critic set to 0.001
+* Learnrate Actor and Critic set to 0.0001
 * Dimensions for hidden layers of Actor and Critic 64x128
 
 Even with optimal parameters, several new (with 2500) episodes had to be trained. 
