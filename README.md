@@ -21,16 +21,29 @@ The task is episodic, and in order to solve the environment, your agents must ge
 The environment is considered solved, when the average (over 100 episodes) of those **scores** is at least +0.5.
 
 # Solution
-The solution is described in detail in [train.py](train.py) and in [Report.md](Report.md). Further scripts and implementations are described in [Report.md](Report.md).
+It was great fun.
+
+The solution is described in detail in [Report.md](Report.md).
 
 To solve the task I decided to use a DDPG(Deep Deterministic Policy Gradient) [paper](https://arxiv.org/pdf/1509.02971.pdf) based agent, with which I could already gain experience in P2 [Link](https://github.com/SusannaMaria/DRLND_P2_ContinuousControl). The agent was trained in solo play and played the games with himself during the training. 
 The main focus was on the determination of hyperparameters. I investigated in 10 variants of an already stable set of parameters. It was important to realize that the success of a training cannot be guaranteed, and that it was necessary to repeat the training with the same hyper parameters, as well as to fix the model weights and a rollback if the training result suddenly collapsed.
 
 All in all I trained a DDPG agent so 10x10x2500 episodes. I recorded a few seconds of "endgame" between two DDPGs with different parameters trained to demonstrate the success of solving the task at hand. 
 
+Two of my trained agents in action
+
 ![Trained Agent](static/game.gif)
 
 It shows that two different behaviors of the agents was developed. "put in back" and a more aggressive behavior.  In the video, the sides are changed about halfway through, the behavior has not changed much.
+
+* [Report.md](Report.md) The report for the submission of my solution for Project 3 of the Udacity Deep Reinforcement Learning course [DRLND](https://www.udacity.com/course/deep-reinforcement-learning-nanodegree--nd893) 
+* [train.py](train.py) Training function and solo play test function. Function was executed with a [script](scripts/parameter_optimize.sh) to train with various different Hyperparameter sets
+* [agent.py](agent.py) MADDG and DDPG implmentation 
+* [models.py](models.py) Actor and Critic Models for DDPG
+* [training_analysis.py](training_analysis.py) Analysis of 10x2500 episodic trained agents which I called **runs**
+* [tournament.py](tournament.py) Playing a tournament of the bests of each **run** 10x10 games
+* [tournament_analysis.py](tournament_analysis.py) Showing the results of the tournament as txt and a heatmap for the report.
+* [single_match.py](single_match.py) Playing a single match between two agents, used to record a screencast which was converted later to a animated gif see: [makegif.sh](scripts/makegif.sh)
 
 # General Information from Udacity
 ### Getting Started

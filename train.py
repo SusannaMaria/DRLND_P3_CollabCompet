@@ -11,6 +11,16 @@ unity_environment_path = "./Tennis_Linux/Tennis.x86_64"
 
 
 def train(args):
+    """main training function
+
+    Instanciate MADDPG Class with hyperparameter set and perform training loop
+
+    Arguments:
+        args {argparse} -- parameter set, which can be controlled from outside by script call
+
+    Returns:
+        array of scores -- Array of episodic scores during training
+    """
     # prepare environment
     brain_name = env.brain_names[0]
     brain = env.brains[brain_name]
@@ -30,6 +40,7 @@ def train(args):
         states.shape[0], state_size))
     print('The state for the first agent looks like:', states[0])
 
+    # Crate instance of MADDPG Class, mainly possible to control the model dimensions, learnrates and batch sizes
     agent = MADDPG(state_size,
                    action_size,
                    lr_actor=args.lr_actor,
@@ -45,7 +56,7 @@ def train(args):
                    actor_layer_dim_3=args.actor_layer_dim_3,
                    critic_layer_dim_1=args.critic_layer_dim_1,
                    critic_layer_dim_2=args.critic_layer_dim_2,
-                   critic_layer_dim_3=args.critic_layer_dim_3                   
+                   critic_layer_dim_3=args.critic_layer_dim_3
 
                    )
 
@@ -89,7 +100,8 @@ def train(args):
         if max_score <= episode_score:
             max_score = episode_score
             # save best model so far
-            agent.save("chkpts/{}/{:02d}_best_model.checkpoint".format(args.model_path,args.loop_counter))
+            agent.save(
+                "chkpts/{}/{:02d}_best_model.checkpoint".format(args.model_path, args.loop_counter))
 
         # record avg score for the latest 100 steps
         if len(total_rewards) >= args.test_n_run:
@@ -105,7 +117,8 @@ def train(args):
                     worsen_tolerance -= 1                   # count worsening counts
                     print("Loaded from last best model.")
                     # continue from last best-model
-                    agent.load("chkpts/{}/{:02d}_best_model.checkpoint".format(args.model_path,args.loop_counter))
+                    agent.load(
+                        "chkpts/{}/{:02d}_best_model.checkpoint".format(args.model_path, args.loop_counter))
                 if worsen_tolerance <= 0:                   # earliy stop training
                     print("Early Stop Training.")
                     break
@@ -114,6 +127,16 @@ def train(args):
 
 
 def test(args):
+    """Test function for solo play of DDPG Agent
+
+    args.test_n_run determined how many episodes are played (default = 100)
+
+    Arguments:
+        args {argparse} -- parameter set, which can be controlled from outside by script call
+
+    Returns:
+        average score -- Average score of game
+    """
     brain_name = env.brain_names[0]
     brain = env.brains[brain_name]
     env_info = env.reset(train_mode=True)[brain_name]
@@ -134,9 +157,10 @@ def test(args):
                    actor_layer_dim_3=args.actor_layer_dim_3,
                    critic_layer_dim_1=args.critic_layer_dim_1,
                    critic_layer_dim_2=args.critic_layer_dim_2,
-                   critic_layer_dim_3=args.critic_layer_dim_3  )
+                   critic_layer_dim_3=args.critic_layer_dim_3)
 
-    agent.load("chkpts/{}/{:02d}_best_model.checkpoint".format(args.model_path,args.loop_counter))
+    agent.load(
+        "chkpts/{}/{:02d}_best_model.checkpoint".format(args.model_path, args.loop_counter))
 
     test_scores = []
     for i_episode in tqdm(range(1, 1+args.test_n_run)):
@@ -165,43 +189,60 @@ def test(args):
     return avg_score
 
 
-
 class RawTextArgumentDefaultsHelpFormatter(
-        argparse.ArgumentDefaultsHelpFormatter,
-        argparse.RawTextHelpFormatter
-    ):
-        pass
+    argparse.ArgumentDefaultsHelpFormatter,
+    argparse.RawTextHelpFormatter
+):
+    pass
+
 
 if __name__ == "__main__":
-
-
-
-    parser = argparse.ArgumentParser(formatter_class=RawTextArgumentDefaultsHelpFormatter)
-    parser.add_argument('--num_episodes', default=int(2500), type=int, help=''' ''')
-    parser.add_argument('--lr_actor', default=float(1e-4), type=float, help=''' ''')
-    parser.add_argument('--lr_critic', default=float(1e-4), type=float, help=''' ''')
-    parser.add_argument('--lr_decay', default=float(0.995), type=float, help=''' ''')
-    parser.add_argument('--replay_buff_size', default=int(1e6), type=int, help=''' ''')
-    parser.add_argument('--gamma', default=float(0.95), type=float, help=''' ''')
-    parser.add_argument('--batch_size', default=int(64), type=int, help=''' ''')
-    parser.add_argument('--random_seed', default=int(999), type=int, help=''' ''')
-    parser.add_argument('--soft_update_tau', default=float(1e-3), type=float, help=''' ''')
+    parser = argparse.ArgumentParser(
+        formatter_class=RawTextArgumentDefaultsHelpFormatter)
+    parser.add_argument('--num_episodes', default=int(2500),
+                        type=int, help=''' ''')
+    parser.add_argument('--lr_actor', default=float(1e-4),
+                        type=float, help=''' ''')
+    parser.add_argument('--lr_critic', default=float(1e-4),
+                        type=float, help=''' ''')
+    parser.add_argument('--lr_decay', default=float(0.995),
+                        type=float, help=''' ''')
+    parser.add_argument('--replay_buff_size',
+                        default=int(1e6), type=int, help=''' ''')
+    parser.add_argument('--gamma', default=float(0.95),
+                        type=float, help=''' ''')
+    parser.add_argument('--batch_size', default=int(64),
+                        type=int, help=''' ''')
+    parser.add_argument('--random_seed', default=int(999),
+                        type=int, help=''' ''')
+    parser.add_argument('--soft_update_tau',
+                        default=float(1e-3), type=float, help=''' ''')
     parser.add_argument('--model_path', default='training', help=''' ''')
-    parser.add_argument('--test_n_run', default=int(100), type=int, help=''' ''')
-    parser.add_argument('--epsilon', default=float(1.0), type=float, help=''' ''')
-    parser.add_argument('--epsilon_decay', default=float(.995), type=float, help=''' ''')
-    parser.add_argument('--main_n_loop', default=int(10), type=int, help=''' ''')
-    parser.add_argument('--actor_layer_dim_1', default=int(64), type=int, help=''' ''')
-    parser.add_argument('--actor_layer_dim_2', default=int(128), type=int, help=''' ''')    
-    parser.add_argument('--actor_layer_dim_3', default=int(0), type=int, help=''' ''')    
-    parser.add_argument('--critic_layer_dim_1', default=int(64), type=int, help=''' ''')
-    parser.add_argument('--critic_layer_dim_2', default=int(128), type=int, help=''' ''')    
-    parser.add_argument('--critic_layer_dim_3', default=int(0), type=int, help=''' ''')    
+    parser.add_argument('--test_n_run', default=int(100),
+                        type=int, help=''' ''')
+    parser.add_argument('--epsilon', default=float(1.0),
+                        type=float, help=''' ''')
+    parser.add_argument('--epsilon_decay',
+                        default=float(.995), type=float, help=''' ''')
+    parser.add_argument('--main_n_loop', default=int(10),
+                        type=int, help=''' ''')
+    parser.add_argument('--actor_layer_dim_1',
+                        default=int(64), type=int, help=''' ''')
+    parser.add_argument('--actor_layer_dim_2',
+                        default=int(128), type=int, help=''' ''')
+    parser.add_argument('--actor_layer_dim_3',
+                        default=int(0), type=int, help=''' ''')
+    parser.add_argument('--critic_layer_dim_1',
+                        default=int(64), type=int, help=''' ''')
+    parser.add_argument('--critic_layer_dim_2',
+                        default=int(128), type=int, help=''' ''')
+    parser.add_argument('--critic_layer_dim_3',
+                        default=int(0), type=int, help=''' ''')
 
     args = parser.parse_args()
 
     env = UnityEnvironment(file_name=unity_environment_path)
-    
+
     project = {}
     project["args"] = args
     project["scores"] = []
@@ -220,13 +261,12 @@ if __name__ == "__main__":
         score = test(args)
         project["scores"].append(score)
         print(score)
-    
-    f = open("chkpts/{}/project.json".format(args.model_path),"w")
-    f.write( str(project) )
+
+    f = open("chkpts/{}/project.json".format(args.model_path), "w")
+    f.write(str(project))
     f.close()
 
     env.close()
-
 
     print(np.min(project["scores"]))
     print(np.max(project["scores"]))

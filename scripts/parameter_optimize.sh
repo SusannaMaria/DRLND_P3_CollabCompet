@@ -1,4 +1,5 @@
 #!/bin/bash
+cd ..
 python train.py --batch_size=64 --lr_actor=0.00001 --lr_critic=0.00010 --model_path=01Run 
 python train.py --batch_size=128 --lr_actor=0.00001 --lr_critic=0.00010 --model_path=02Run 
 python train.py --batch_size=64 --lr_actor=0.0001 --lr_critic=0.00010 --model_path=03Run 
