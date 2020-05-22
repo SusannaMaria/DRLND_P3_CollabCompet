@@ -30,9 +30,17 @@ A typical behavior of the training. It shows no increase in the reward over a lo
 ![](chkpts/02Run/rewards.png)
 
 ### Solving the problem with stabiliity ... or not
+The behaviour during the training of the tennis game was sometimes sobering but very instructive. I take for myself that DRL is a first hopeful glimmer of a possible General AI.  The fact that an optimum could be achieved by repeated training and adjustments of the hyper parameters showed the necessity to deal with how to train and to reproduce the results.
 
+**hints**
+* Prepare your environment so that you can control hyper parameters from outside with scripting and batch programs.
+* Repeat trainings even if first the parameters show terrible results
+* Buy a fast machine and a halfway decent GPU (which I did) if you want to take DRL seriously for yourself ... take a linux operating system 
+* Try to become better in python
 
 # Models
+Model parameters like dimensions were taken from https://github.com/udacity/deep-reinforcement-learning/blob/master/ddpg-pendulum/model.py and showed a good performance. I have created an export of the networks via https://github.com/szagoruyko/pytorchviz
+![](static/ddpg_model.png)
 
 # Training
 Since the training was very unstable, the model weights were stored continuously and if the agent could be trained above 0.5, a fallback to the last best state was implemented.
@@ -74,6 +82,8 @@ Parameters that have been changed. A total of 10 runs were made
 I trained a total of ```10 hyperparameter variants * 10 trainings * 2500 episodes = 250000 episodes``` for 100 model checkpoints over 1 day on my PC. The results of a training could go against zero or an ideal reward greater than 2, so I decided to train each hyperparameter set 10 times. The score shown in the table (Min, Max, Mean, Std) was calculated from 10 independent checkpoints per hyperparameter data set. Each of them played 100 episodes solo with himself.
 
 ## Which dataset is the best?
+For each parameter set I saved the checkpoints for 10 complete trainings with 2500 episodes each. I saved the results of the training scores and the test runs into a JSONfile e.g. [project.json](chkpts/03Run/project.json)
+
 * Small batchsize of 64, the higher the worse
 * Learnrate Actor and Critic set to 0.001
 * Dimensions for hidden layers of Actor and Critic 64x128
@@ -88,7 +98,7 @@ I wanted to see how a solo player performs in a competition with others and let 
 
 ![](static/tournament.png)
 
-The top 5 of the games. Solo game 3 won. Hyperparameter set 3 and 7 together had the best score in the mixed game.
+The top 5 of the games. Solo game 3 won. Hyperparameter set 4 and 6 together had the best score in the mixed game.
 
 ```
 03Run/03_best_model.checkpoint vs. 03Run/03_best_model.checkpoint = 2.631000039204955
@@ -97,3 +107,9 @@ The top 5 of the games. Solo game 3 won. Hyperparameter set 3 and 7 together had
 04Run/09_best_model.checkpoint vs. 03Run/03_best_model.checkpoint = 2.4930000371485947
 07Run/09_best_model.checkpoint vs. 03Run/03_best_model.checkpoint = 2.4568000366166234
 ```
+
+# Ideas for Future Work
+* Optimize the code so that more like two agents can play together, for example Soccer
+* See if TD3 gives better results than DDPG.
+* Optimize the saving and loading of models and the respective project configuration
+* Examine this solution with other UnityML Agent environments
