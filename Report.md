@@ -78,10 +78,13 @@ I trained a total of ```10 hyperparameter variants * 10 trainings * 2500 episode
 * Learnrate Actor and Critic set to 0.001
 * Dimensions for hidden layers of Actor and Critic 64x128
 
+Even with optimal parameters, several new (with 2500) episodes had to be trained. 
+
 ![](chkpts/03Run/rewards.png)
 
 # Tournament
 I wanted to see how a solo player performs in a competition with others and let every best trained agent for each hyperparameter set play with himself and against each other from different dataset
+
 
 ![](static/tournament.png)
 

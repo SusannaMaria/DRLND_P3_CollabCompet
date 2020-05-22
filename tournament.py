@@ -151,9 +151,9 @@ for project in projects:
 
 c = 0
 for project in projects:
-    ds = readproject("{}/project.json".format(project))
+    ds = readproject("chkpts/{}/project.json".format(project))
     args = ds['args']
-    ckp_name = "{}/{:02d}_best_model.checkpoint".format(project, max_index[c])
+    ckp_name = "chkpts/{}/{:02d}_best_model.checkpoint".format(project, max_index[c])
     c+=1
     agent = loadagent(ckp_name,
                       state_dim=state_size,
