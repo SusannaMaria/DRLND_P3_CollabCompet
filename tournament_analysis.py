@@ -6,7 +6,7 @@ import matplotlib.backends.backend_pdf
 from sklearn import preprocessing
 
 # 1: 01Run/00_best_model.checkpoint vs. 01Run/00_best_model.checkpoint = 2.1578000321611763
-f = open("tournament_result.txt", "r")
+f = open("static/tournament_result.txt", "r")
 
 agents1 = []
 agents2 = []
