@@ -10,6 +10,7 @@ import os
 unity_environment_path = "Soccer_Linux/Soccer.x86_64"
 env = UnityEnvironment(file_name=unity_environment_path)
 
+
 def eval():
     # print the brain names
     print(env.brain_names)
@@ -25,7 +26,7 @@ def eval():
     # reset the environment
     env_info = env.reset(train_mode=True)
 
-    # number of agents 
+    # number of agents
     num_g_agents = len(env_info[g_brain_name].agents)
     print('Number of goalie agents:', num_g_agents)
     num_s_agents = len(env_info[s_brain_name].agents)
@@ -37,52 +38,65 @@ def eval():
     s_action_size = s_brain.vector_action_space_size
     print('Number of striker actions:', s_action_size)
 
-    # examine the state space 
+    # examine the state space
     g_states = env_info[g_brain_name].vector_observations
     g_state_size = g_states.shape[1]
-    print('There are {} goalie agents. Each receives a state with length: {}'.format(g_states.shape[0], g_state_size))
+    print('There are {} goalie agents. Each receives a state with length: {}'.format(
+        g_states.shape[0], g_state_size))
     s_states = env_info[s_brain_name].vector_observations
     s_state_size = s_states.shape[1]
-    print('There are {} striker agents. Each receives a state with length: {}'.format(s_states.shape[0], s_state_size))
+    print('There are {} striker agents. Each receives a state with length: {}'.format(
+        s_states.shape[0], s_state_size))
 
     for i in range(2):                                         # play game for 2 episodes
-        env_info = env.reset(train_mode=False)                 # reset the environment    
-        g_states = env_info[g_brain_name].vector_observations  # get initial state (goalies)
-        s_states = env_info[s_brain_name].vector_observations  # get initial state (strikers)
-        g_scores = np.zeros(num_g_agents)                      # initialize the score (goalies)
-        s_scores = np.zeros(num_s_agents)                      # initialize the score (strikers)
+        # reset the environment
+        env_info = env.reset(train_mode=False)
+        # get initial state (goalies)
+        g_states = env_info[g_brain_name].vector_observations
+        # get initial state (strikers)
+        s_states = env_info[s_brain_name].vector_observations
+        # initialize the score (goalies)
+        g_scores = np.zeros(num_g_agents)
+        # initialize the score (strikers)
+        s_scores = np.zeros(num_s_agents)
         while True:
             # select actions and send to environment
             g_actions = np.random.randint(g_action_size, size=num_g_agents)
-            print("#",g_actions,"#")
-            s_actions = np.random.randint(s_action_size, size=num_s_agents)
-            print("ö",g_actions,"ö")
-            actions = dict(zip([g_brain_name, s_brain_name], 
-                            [g_actions, s_actions]))
-            print(actions)
-            env_info = env.step(actions)                       
-            exit()
-            # get next states
-            g_next_states = env_info[g_brain_name].vector_observations         
-            s_next_states = env_info[s_brain_name].vector_observations
+            print("#", g_actions, "#",g_action_size)
             
+            s_actions = np.random.randint(s_action_size, size=num_s_agents)
+            print("ö", g_actions, "ö",s_action_size)
+
+            g_actions = np.array([0,0])
+            s_actions = np.array([3,2.4])
+            actions = dict(zip([g_brain_name, s_brain_name],
+                               [g_actions, s_actions]))
+            print(actions)
+            env_info = env.step(actions)
+            
+            # get next states
+            g_next_states = env_info[g_brain_name].vector_observations
+            s_next_states = env_info[s_brain_name].vector_observations
+
             # get reward and update scores
-            g_rewards = env_info[g_brain_name].rewards  
+            g_rewards = env_info[g_brain_name].rewards
             s_rewards = env_info[s_brain_name].rewards
             g_scores += g_rewards
             s_scores += s_rewards
-            
+
             # check if episode finished
-            done = np.any(env_info[g_brain_name].local_done)  
-            
+            done = np.any(env_info[g_brain_name].local_done)
+
             # roll over states to next time step
             g_states = g_next_states
             s_states = s_next_states
-            
+
             # exit loop if episode finished
-            if done:                                           
+            if done:
                 break
-        print('Scores from episode {}: {} (goalies), {} (strikers)'.format(i+1, g_scores, s_scores))
+        print('Scores from episode {}: {} (goalies), {} (strikers)'.format(
+            i+1, g_scores, s_scores))
+
 
 def train(args):
 
@@ -100,7 +114,7 @@ def train(args):
     # reset the environment
     env_info = env.reset(train_mode=True)
 
-    # number of agents 
+    # number of agents
     num_g_agents = len(env_info[g_brain_name].agents)
     print('Number of goalie agents:', num_g_agents)
     num_s_agents = len(env_info[s_brain_name].agents)
@@ -112,49 +126,50 @@ def train(args):
     s_action_size = s_brain.vector_action_space_size
     print('Number of striker actions:', s_action_size)
 
-    # examine the state space 
+    # examine the state space
     g_states = env_info[g_brain_name].vector_observations
     g_state_size = g_states.shape[1]
-    print('There are {} goalie agents. Each receives a state with length: {}'.format(g_states.shape[0], g_state_size))
+    print('There are {} goalie agents. Each receives a state with length: {}'.format(
+        g_states.shape[0], g_state_size))
     s_states = env_info[s_brain_name].vector_observations
     s_state_size = s_states.shape[1]
-    print('There are {} striker agents. Each receives a state with length: {}'.format(s_states.shape[0], s_state_size))
-
+    print('There are {} striker agents. Each receives a state with length: {}'.format(
+        s_states.shape[0], s_state_size))
 
     g_agent = MADDPG(g_state_size,
-                   g_action_size,
-                   lr_actor=args.lr_actor,
-                   lr_critic=args.lr_critic,
-                   lr_decay=args.lr_decay,
-                   replay_buff_size=args.replay_buff_size,
-                   gamma=args.gamma,
-                   batch_size=args.batch_size,
-                   random_seed=args.random_seed,
-                   soft_update_tau=args.soft_update_tau,
-                   actor_layer_dim_1=args.actor_layer_dim_1,
-                   actor_layer_dim_2=args.actor_layer_dim_2,
-                   actor_layer_dim_3=args.actor_layer_dim_3,
-                   critic_layer_dim_1=args.critic_layer_dim_1,
-                   critic_layer_dim_2=args.critic_layer_dim_2,
-                   critic_layer_dim_3=args.critic_layer_dim_3)
+                     g_action_size,
+                     lr_actor=args.lr_actor,
+                     lr_critic=args.lr_critic,
+                     lr_decay=args.lr_decay,
+                     replay_buff_size=args.replay_buff_size,
+                     gamma=args.gamma,
+                     batch_size=args.batch_size,
+                     random_seed=args.random_seed,
+                     soft_update_tau=args.soft_update_tau,
+                     actor_layer_dim_1=args.actor_layer_dim_1,
+                     actor_layer_dim_2=args.actor_layer_dim_2,
+                     actor_layer_dim_3=args.actor_layer_dim_3,
+                     critic_layer_dim_1=args.critic_layer_dim_1,
+                     critic_layer_dim_2=args.critic_layer_dim_2,
+                     critic_layer_dim_3=args.critic_layer_dim_3)
 
     s_agent = MADDPG(s_state_size,
-                   s_action_size,
-                   lr_actor=args.lr_actor,
-                   lr_critic=args.lr_critic,
-                   lr_decay=args.lr_decay,
-                   replay_buff_size=args.replay_buff_size,
-                   gamma=args.gamma,
-                   batch_size=args.batch_size,
-                   random_seed=args.random_seed,
-                   soft_update_tau=args.soft_update_tau,
-                   actor_layer_dim_1=args.actor_layer_dim_1,
-                   actor_layer_dim_2=args.actor_layer_dim_2,
-                   actor_layer_dim_3=args.actor_layer_dim_3,
-                   critic_layer_dim_1=args.critic_layer_dim_1,
-                   critic_layer_dim_2=args.critic_layer_dim_2,
-                   critic_layer_dim_3=args.critic_layer_dim_3)                   
-    
+                     s_action_size,
+                     lr_actor=args.lr_actor,
+                     lr_critic=args.lr_critic,
+                     lr_decay=args.lr_decay,
+                     replay_buff_size=args.replay_buff_size,
+                     gamma=args.gamma,
+                     batch_size=args.batch_size,
+                     random_seed=args.random_seed,
+                     soft_update_tau=args.soft_update_tau,
+                     actor_layer_dim_1=args.actor_layer_dim_1,
+                     actor_layer_dim_2=args.actor_layer_dim_2,
+                     actor_layer_dim_3=args.actor_layer_dim_3,
+                     critic_layer_dim_1=args.critic_layer_dim_1,
+                     critic_layer_dim_2=args.critic_layer_dim_2,
+                     critic_layer_dim_3=args.critic_layer_dim_3)
+
     total_rewards = []
     avg_scores = []
     max_avg_score = -1
@@ -167,45 +182,48 @@ def train(args):
     worsen_tolerance = threshold_init
     for i_episode in range(1, 1+args.num_episodes):
 
-        env_info = env.reset(train_mode=False)                 # reset the environment    
-        g_states = env_info[g_brain_name].vector_observations  # get initial state (goalies)
-        s_states = env_info[s_brain_name].vector_observations  # get initial state (strikers)
-        g_scores = np.zeros(num_g_agents)                      # initialize the score (goalies)
-        s_scores = np.zeros(num_s_agents)                      # initialize the score (strikers)
-        
+        # reset the environment
+        env_info = env.reset(train_mode=False)
+        # get initial state (goalies)
+        g_states = env_info[g_brain_name].vector_observations
+        # get initial state (strikers)
+        s_states = env_info[s_brain_name].vector_observations
+        # initialize the score (goalies)
+        g_scores = np.zeros(num_g_agents)
+        # initialize the score (strikers)
+        s_scores = np.zeros(num_s_agents)
 
         done = False
         while not done:
             # select an action
             g_actions = g_agent.act(g_states, noise_t)
             s_actions = s_agent.act(s_states, noise_t)
-            print(g_actions)
-            print(s_actions)
-            exit()
-            actions = dict(zip([g_brain_name, s_brain_name], 
-                            [g_actions, s_actions]))
-            env_info = env.step(actions)   
+            g_actions_am = np.array([np.argmax(g_actions[0]),np.argmax(g_actions[1])])
+            s_actions_am = np.array([np.argmax(s_actions[0]),np.argmax(s_actions[1])])
+            actions = dict(zip([g_brain_name, s_brain_name],
+                               [g_actions_am, s_actions_am]))
+            env_info = env.step(actions)
 
             # get next states
-            g_next_states = env_info[g_brain_name].vector_observations         
+            g_next_states = env_info[g_brain_name].vector_observations
             s_next_states = env_info[s_brain_name].vector_observations
 
             # get reward and update scores
-            g_rewards = env_info[g_brain_name].rewards  
+            g_rewards = env_info[g_brain_name].rewards
             s_rewards = env_info[s_brain_name].rewards
             g_scores += g_rewards
             s_scores += s_rewards
 
-            done = np.any(env_info[g_brain_name].local_done) 
+            done = np.any(env_info[g_brain_name].local_done)
 
-            g_agent.update(g_states, g_actions, g_rewards, g_next_states, [done, done])
-            s_agent.update(s_states, s_actions, s_rewards, s_next_states, [done, done])
+            g_agent.update(g_states, g_actions, g_rewards,
+                           g_next_states, [done, done])
+            s_agent.update(s_states, s_actions, s_rewards,
+                           s_next_states, [done, done])
 
             noise_t *= noise_decay
             g_states = g_next_states
             s_states = s_next_states
-            
-
 
         # episode_score = np.max(scores)
         # total_rewards.append(episode_score)
@@ -213,7 +231,7 @@ def train(args):
         #     i_episode, episode_score, latest_avg_score), end=' ')
 
         print('\rScores from episode {}: {} (goalies), {} (strikers)'.format(
-            i_episode, g_scores, s_scores))    
+            i_episode, g_scores, s_scores))
 
         # if max_score <= episode_score:
         #     max_score = episode_score
@@ -244,11 +262,13 @@ def train(args):
     del s_agent
     return total_rewards
 
+
 class RawTextArgumentDefaultsHelpFormatter(
     argparse.ArgumentDefaultsHelpFormatter,
     argparse.RawTextHelpFormatter
 ):
     pass
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
@@ -300,7 +320,7 @@ if __name__ == "__main__":
     project["scores"] = []
     project["rewards"] = []
 
-    eval()
+    #eval()
 
     try:
         os.mkdir(args.model_path)
