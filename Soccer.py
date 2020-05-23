@@ -170,20 +170,26 @@ def train(args):
                      critic_layer_dim_2=args.critic_layer_dim_2,
                      critic_layer_dim_3=args.critic_layer_dim_3)
 
-    total_rewards = []
-    avg_scores = []
-    max_avg_score = -1
-    max_score = -1
+    total_g_rewards = []
+    total_s_rewards = []
+    avg_s_scores = []
+    avg_g_scores = []
+    max_avg_s_score = -1
+    max_avg_g_score = -1
+    max_g_score = -1
+    max_s_score = -1
     threshold_init = 20
     noise_t = args.epsilon
     noise_decay = args.epsilon_decay
-    latest_avg_score = -1
+    latest_avg_g_score = -1
+    latest_avg_s_score = -1
     # for early-stopping training if consistently worsen for # episodes
-    worsen_tolerance = threshold_init
+    worsen_s_tolerance = threshold_init
+    worsen_g_tolerance = threshold_init
     for i_episode in range(1, 1+args.num_episodes):
 
         # reset the environment
-        env_info = env.reset(train_mode=False)
+        env_info = env.reset(train_mode=True)
         # get initial state (goalies)
         g_states = env_info[g_brain_name].vector_observations
         # get initial state (strikers)
@@ -225,42 +231,68 @@ def train(args):
             g_states = g_next_states
             s_states = s_next_states
 
-        # episode_score = np.max(scores)
-        # total_rewards.append(episode_score)
-        # print("\rEpisodic {} Score: {:.4f}\t Avg Score: {:.4f}".format(
-        #     i_episode, episode_score, latest_avg_score), end=' ')
+        episode_g_score = np.max(g_scores)
+        episode_s_score = np.max(s_scores)
+        
+        total_s_rewards.append(episode_s_score)
+        total_g_rewards.append(episode_g_score)
 
-        print('\rScores from episode {}: {} (goalies), {} (strikers)'.format(
-            i_episode, g_scores, s_scores))
+        print('\rScores from episode {}: {} (goalies), {} (strikers) | Avg Score: {:.4f} (goalies), {:.4f} (strikers)'.format(
+            i_episode, episode_g_score, episode_s_score, latest_avg_g_score, latest_avg_s_score))
 
-        # if max_score <= episode_score:
-        #     max_score = episode_score
-        #     # save best model so far
-        #     agent.save(
-        #         "chkpts/{}/{:02d}_best_model.checkpoint".format(args.model_path, args.loop_counter))
+        if max_s_score <= episode_s_score:
+            max_s_score = episode_s_score
+            # save best model so far
+            s_agent.save(
+                "socccer_chkpts/{}/{:02d}_strikers_best_model.checkpoint".format(args.model_path, args.loop_counter))
 
-        # # record avg score for the latest 100 steps
-        # if len(total_rewards) >= args.test_n_run:
-        #     latest_avg_score = sum(
-        #         total_rewards[(len(total_rewards)-args.test_n_run):]) / args.test_n_run
-        #     avg_scores.append(latest_avg_score)
+        if max_g_score <= episode_g_score:
+            max_g_score = episode_g_score
+            # save best model so far
+            g_agent.save(
+                "socccer_chkpts/{}/{:02d}_goalies_best_model.checkpoint".format(args.model_path, args.loop_counter))
 
-        #     if max_avg_score <= latest_avg_score:           # record better results
-        #         worsen_tolerance = threshold_init           # re-count tolerance
-        #         max_avg_score = latest_avg_score
-        #     else:
-        #         if max_avg_score > 0.5:
-        #             worsen_tolerance -= 1                   # count worsening counts
-        #             print("Loaded from last best model.")
-        #             # continue from last best-model
-        #             agent.load(
-        #                 "chkpts/{}/{:02d}_best_model.checkpoint".format(args.model_path, args.loop_counter))
-        #         if worsen_tolerance <= 0:                   # earliy stop training
-        #             print("Early Stop Training.")
-        #             break
+        # record avg score for the latest 100 steps
+        if len(total_s_rewards) >= args.test_n_run:
+            latest_avg_s_score = sum(
+                total_s_rewards[(len(total_s_rewards)-args.test_n_run):]) / args.test_n_run
+            avg_s_scores.append(latest_avg_s_score)
+
+            if max_avg_s_score <= latest_avg_s_score:           # record better results
+                worsen_s_tolerance = threshold_init           # re-count tolerance
+                max_avg_s_score = latest_avg_s_score
+            else:
+                if max_avg_s_score > 0.5:
+                    worsen_tolerance -= 1                   # count worsening counts
+                    print("Loaded from last best model.")
+                    # continue from last best-model
+                    s_agent.load(
+                        "socccer_chkpts/{}/{:02d}_strikers_best_model.checkpoint".format(args.model_path, args.loop_counter))
+                if worsen_s_tolerance <= 0:                   # earliy stop training
+                    print("Early Stop Training.")
+                    break
+        # record avg score for the latest 100 steps
+        if len(total_g_rewards) >= args.test_n_run:
+            latest_avg_g_score = sum(
+                total_g_rewards[(len(total_g_rewards)-args.test_n_run):]) / args.test_n_run
+            avg_g_scores.append(latest_avg_g_score)
+
+            if max_avg_g_score <= latest_avg_g_score:           # record better results
+                worsen_g_tolerance = threshold_init           # re-count tolerance
+                max_avg_g_score = latest_avg_g_score
+            # else:
+            #     if max_avg_g_score > 0.5:
+            #         worsen_g_tolerance -= 1                   # count worsening counts
+            #         print("Loaded from last best model.")
+            #         # continue from last best-model
+            #         g_agent.load(
+            #             "chkpts/{}/{:02d}_goalies_best_model.checkpoint".format(args.model_path, args.loop_counter))
+            #     if worsen_g_tolerance <= 0:                   # earliy stop training
+            #         print("Early Stop Training.")
+            #         break                
     del g_agent
     del s_agent
-    return total_rewards
+    return (total_g_rewards, total_s_rewards) 
 
 
 class RawTextArgumentDefaultsHelpFormatter(
@@ -323,18 +355,19 @@ if __name__ == "__main__":
     #eval()
 
     try:
-        os.mkdir(args.model_path)
+        os.mkdir("socccer_chkpts/{}".format(args.model_path))
     except OSError:
         pass
 
     for i in range(args.main_n_loop):
         args.loop_counter = i
         print(args)
-        reward = train(args)
-        project["rewards"].append(reward)
+        (reward_g, reward_s) = train(args)
+        project["rewards_s"].append(reward_s)
+        project["rewards_g"].append(reward_g)
         # score = test(args)
         # project["scores"].append(score)
-        print(score)
+        #print(score)
 
     f = open("socccer_chkpts/{}/project.json".format(args.model_path), "w")
     f.write(str(project))
