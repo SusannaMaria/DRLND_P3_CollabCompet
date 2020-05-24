@@ -317,7 +317,7 @@ if __name__ == "__main__":
                         default=int(1e6), type=int, help=''' ''')
     parser.add_argument('--gamma', default=float(0.95),
                         type=float, help=''' ''')
-    parser.add_argument('--batch_size', default=int(64),
+    parser.add_argument('--batch_size', default=int(128),
                         type=int, help=''' ''')
     parser.add_argument('--random_seed', default=int(999),
                         type=int, help=''' ''')
