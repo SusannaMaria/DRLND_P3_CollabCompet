@@ -2,7 +2,7 @@ from unityagents import UnityEnvironment
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
-from agent import MADDPG
+from agent_soccer import MADDPG
 import argparse
 from tqdm import tqdm
 import os
@@ -171,21 +171,24 @@ def train(args):
                      critic_layer_dim_3=args.critic_layer_dim_3)
 
     total_g_rewards = []
+    new = []
+    total_g_rewards.append(new)
+    new = []
     total_s_rewards = []
     avg_s_scores = []
     avg_g_scores = []
-    max_avg_s_score = -1
-    max_avg_g_score = -1
-    max_g_score = -1
-    max_s_score = -1
+    max_avg_s_score = [-1,-1]
+    max_avg_g_score = [-1,-1]
+    max_g_score = [-1,-1]
+    max_s_score = [-1,-1]
     threshold_init = 20
     noise_t = args.epsilon
     noise_decay = args.epsilon_decay
-    latest_avg_g_score = -1
-    latest_avg_s_score = -1
+    latest_avg_g_score = [-1.,-1.]
+    latest_avg_s_score = [-1.,-1.]
     # for early-stopping training if consistently worsen for # episodes
-    worsen_s_tolerance = threshold_init
-    worsen_g_tolerance = threshold_init
+    worsen_s_tolerance = [threshold_init,threshold_init]
+    worsen_g_tolerance = [threshold_init,threshold_init]
     for i_episode in range(1, 1+args.num_episodes):
 
         # reset the environment
@@ -204,10 +207,10 @@ def train(args):
             # select an action
             g_actions = g_agent.act(g_states, noise_t)
             s_actions = s_agent.act(s_states, noise_t)
-            g_actions_am = np.array([np.argmax(g_actions[0]),np.argmax(g_actions[1])])
-            s_actions_am = np.array([np.argmax(s_actions[0]),np.argmax(s_actions[1])])
+
             actions = dict(zip([g_brain_name, s_brain_name],
-                               [g_actions_am, s_actions_am]))
+                                [g_actions, s_actions]))
+
             env_info = env.step(actions)
 
             # get next states
@@ -231,65 +234,68 @@ def train(args):
             g_states = g_next_states
             s_states = s_next_states
 
-        episode_g_score = np.max(g_scores)
-        episode_s_score = np.max(s_scores)
-        
-        total_s_rewards.append(episode_s_score)
-        total_g_rewards.append(episode_g_score)
+        for id in range(2):
+            new_s = []
+            new_g = []
+            new_s.append(s_scores[id])
+            new_g.append(g_scores[id])
+    
+        total_s_rewards.append(new_s)
+        total_g_rewards.append(new_g)
 
-        print('\rScores from episode {}: {} (goalies), {} (strikers) | Avg Score: {:.4f} (goalies), {:.4f} (strikers)'.format(
-            i_episode, episode_g_score, episode_s_score, latest_avg_g_score, latest_avg_s_score))
+        print('\rScores from episode {}: {:.4f},{:.4f}(goalies), {:.4f},{:.4f} (strikers) | Avg Score: {:.4f},{:.4f} (goalies), {:.4f},{:.4f} (strikers)'.format(
+            i_episode, g_scores[0], g_scores[1], s_scores[0],s_scores[1], latest_avg_g_score[0], latest_avg_g_score[1], latest_avg_s_score[0],latest_avg_s_score[1]))
 
-        if max_s_score <= episode_s_score:
-            max_s_score = episode_s_score
-            # save best model so far
-            s_agent.save(
-                "socccer_chkpts/{}/{:02d}_strikers_best_model.checkpoint".format(args.model_path, args.loop_counter))
+        for id in range(2):
+            if max_s_score[id] <= s_scores[id]:
+                max_s_score[id] = s_scores[id]
+                s_agent.save(id,
+                    "socccer_chkpts/{}/{:02d}_strikers_best_model.checkpoint".format(args.model_path, args.loop_counter))                
 
-        if max_g_score <= episode_g_score:
-            max_g_score = episode_g_score
-            # save best model so far
-            g_agent.save(
-                "socccer_chkpts/{}/{:02d}_goalies_best_model.checkpoint".format(args.model_path, args.loop_counter))
+            if max_g_score[id] <= g_scores[id]:
+                max_g_score[id] = g_scores[id]
+                g_agent.save(id,
+                    "socccer_chkpts/{}/{:02d}_strikers_best_model.checkpoint".format(args.model_path, args.loop_counter))    
 
-        # record avg score for the latest 100 steps
-        if len(total_s_rewards) >= args.test_n_run:
-            latest_avg_s_score = sum(
-                total_s_rewards[(len(total_s_rewards)-args.test_n_run):]) / args.test_n_run
-            avg_s_scores.append(latest_avg_s_score)
-
-            if max_avg_s_score <= latest_avg_s_score:           # record better results
-                worsen_s_tolerance = threshold_init           # re-count tolerance
-                max_avg_s_score = latest_avg_s_score
+        for id in range(2):
+            # record avg score for the latest 100 steps
+            if len(total_s_rewards) >= args.test_n_run:
+                latest_avg_s_score[id] = sum(
+                    total_s_rewards[(len(total_s_rewards)-args.test_n_run):][id]) / args.test_n_run
+                if max_avg_s_score[id] <= latest_avg_s_score[id]:           # record better results
+                    worsen_s_tolerance[id] = threshold_init           # re-count tolerance
+                    max_avg_s_score[id] = latest_avg_s_score[id]
             else:
-                if max_avg_s_score > 0.5:
-                    worsen_tolerance -= 1                   # count worsening counts
+                if max_avg_s_score[id] > 0.5:
+                    worsen_s_tolerance[id] -= 1                   # count worsening counts
                     print("Loaded from last best model.")
                     # continue from last best-model
-                    s_agent.load(
+                    s_agent.load(id,
                         "socccer_chkpts/{}/{:02d}_strikers_best_model.checkpoint".format(args.model_path, args.loop_counter))
-                if worsen_s_tolerance <= 0:                   # earliy stop training
-                    print("Early Stop Training.")
-                    break
-        # record avg score for the latest 100 steps
-        if len(total_g_rewards) >= args.test_n_run:
-            latest_avg_g_score = sum(
-                total_g_rewards[(len(total_g_rewards)-args.test_n_run):]) / args.test_n_run
-            avg_g_scores.append(latest_avg_g_score)
+                if worsen_s_tolerance[id] <= 0:                   # earliy stop training
+                    print("Stop of s-Training for {}".format(id))
+        avg_s_scores.append(latest_avg_s_score)    
 
-            if max_avg_g_score <= latest_avg_g_score:           # record better results
-                worsen_g_tolerance = threshold_init           # re-count tolerance
-                max_avg_g_score = latest_avg_g_score
-            # else:
-            #     if max_avg_g_score > 0.5:
-            #         worsen_g_tolerance -= 1                   # count worsening counts
-            #         print("Loaded from last best model.")
-            #         # continue from last best-model
-            #         g_agent.load(
-            #             "chkpts/{}/{:02d}_goalies_best_model.checkpoint".format(args.model_path, args.loop_counter))
-            #     if worsen_g_tolerance <= 0:                   # earliy stop training
-            #         print("Early Stop Training.")
-            #         break                
+        for id in range(2):
+            # record avg score for the latest 100 steps
+            if len(total_g_rewards) >= args.test_n_run:
+                latest_avg_g_score[id] = sum(
+                    total_g_rewards[(len(total_g_rewards)-args.test_n_run):][id]) / args.test_n_run
+                if max_avg_g_score[id] <= latest_avg_g_score[id]:           # record better results
+                    worsen_g_tolerance[id] = threshold_init           # re-count tolerance
+                    max_avg_g_score[id] = latest_avg_g_score[id]
+            else:
+                if max_avg_g_score[id] > 0.5:
+                    worsen_g_tolerance[id] -= 1                   # count worsening counts
+                    print("Loaded from last best model.")
+                    # continue from last best-model
+                    g_agent.load(id,
+                        "socccer_chkpts/{}/{:02d}_strikers_best_model.checkpoint".format(args.model_path, args.loop_counter))
+                if worsen_g_tolerance[id] <= 0:                   # earliy stop training
+                    print("Stop of s-Training for {}".format(id))
+        avg_g_scores.append(latest_avg_g_score)    
+
+
     del g_agent
     del s_agent
     return (total_g_rewards, total_s_rewards) 
@@ -305,11 +311,11 @@ class RawTextArgumentDefaultsHelpFormatter(
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         formatter_class=RawTextArgumentDefaultsHelpFormatter)
-    parser.add_argument('--num_episodes', default=int(2500),
+    parser.add_argument('--num_episodes', default=int(1000),
                         type=int, help=''' ''')
-    parser.add_argument('--lr_actor', default=float(1e-4),
+    parser.add_argument('--lr_actor', default=float(1e-5),
                         type=float, help=''' ''')
-    parser.add_argument('--lr_critic', default=float(1e-4),
+    parser.add_argument('--lr_critic', default=float(1e-5),
                         type=float, help=''' ''')
     parser.add_argument('--lr_decay', default=float(0.995),
                         type=float, help=''' ''')
@@ -317,31 +323,31 @@ if __name__ == "__main__":
                         default=int(1e6), type=int, help=''' ''')
     parser.add_argument('--gamma', default=float(0.95),
                         type=float, help=''' ''')
-    parser.add_argument('--batch_size', default=int(128),
+    parser.add_argument('--batch_size', default=int(64),
                         type=int, help=''' ''')
     parser.add_argument('--random_seed', default=int(999),
                         type=int, help=''' ''')
     parser.add_argument('--soft_update_tau',
                         default=float(1e-3), type=float, help=''' ''')
     parser.add_argument('--model_path', default='training', help=''' ''')
-    parser.add_argument('--test_n_run', default=int(100),
+    parser.add_argument('--test_n_run', default=int(10),
                         type=int, help=''' ''')
     parser.add_argument('--epsilon', default=float(1.0),
                         type=float, help=''' ''')
     parser.add_argument('--epsilon_decay',
                         default=float(.995), type=float, help=''' ''')
-    parser.add_argument('--main_n_loop', default=int(10),
+    parser.add_argument('--main_n_loop', default=int(1),
                         type=int, help=''' ''')
     parser.add_argument('--actor_layer_dim_1',
-                        default=int(64), type=int, help=''' ''')
-    parser.add_argument('--actor_layer_dim_2',
                         default=int(128), type=int, help=''' ''')
+    parser.add_argument('--actor_layer_dim_2',
+                        default=int(256), type=int, help=''' ''')
     parser.add_argument('--actor_layer_dim_3',
                         default=int(0), type=int, help=''' ''')
     parser.add_argument('--critic_layer_dim_1',
-                        default=int(64), type=int, help=''' ''')
-    parser.add_argument('--critic_layer_dim_2',
                         default=int(128), type=int, help=''' ''')
+    parser.add_argument('--critic_layer_dim_2',
+                        default=int(256), type=int, help=''' ''')
     parser.add_argument('--critic_layer_dim_3',
                         default=int(0), type=int, help=''' ''')
 
@@ -349,9 +355,12 @@ if __name__ == "__main__":
 
     project = {}
     project["args"] = args
-    project["scores"] = []
-    project["rewards"] = []
+    project["scores_s"] = []
+    project["rewards_s"] = []
 
+    project["scores_s"] = []
+    project["rewards_g"] = []
+    
     #eval()
 
     try:
@@ -375,6 +384,4 @@ if __name__ == "__main__":
 
     env.close()
 
-    print(np.min(project["scores"]))
-    print(np.max(project["scores"]))
-    print(np.mean(project["scores"]))
+
